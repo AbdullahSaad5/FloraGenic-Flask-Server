@@ -7,11 +7,11 @@ import controllers.plant_disease as plant_disease
 import os
 
 
-model_path = os.path.join(os.getcwd(), 'models', 'your_model.h5')
 
 
 app = Flask(__name__)
-model = load_model('./RESNET_PLANT_IDENTIFICATION_CLASSES_140.h5')
+model_path = os.path.join(os.getcwd(), 'models', 'RESNET_PLANT_IDENTIFICATION_CLASSES_140.h5')
+model = load_model(model_path)
 
 @app.route('/', methods=['GET'])
 def hello_world():
@@ -42,6 +42,6 @@ def identify_plant_disease():
 
 if __name__ == '__main__':
     # debug run
-    app.run(debug=True)
-    # from waitress import serve
-    # serve(app, host="0.0.0.0", port=8080)
+    # app.run(debug=True)
+    from waitress import serve
+    serve(app, host="0.0.0.0", port=8080)
