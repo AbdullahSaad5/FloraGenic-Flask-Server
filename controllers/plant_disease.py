@@ -6,5 +6,5 @@ model = project.version(2).model
 # infer on a local image
 
 def plant_disease(image_path):
-    return model.predict(image_path, confidence=50, overlap=30).json()
+    return model.predict(image_path, confidence=50, overlap=30).json().get("predictions")
 

@@ -5,9 +5,9 @@ import numpy as np
 import controllers.plant_identification as plant_identification
 import controllers.plant_disease as plant_disease
 import os
-
-
-
+from werkzeug.utils import secure_filename
+import requests
+import uuid
 
 app = Flask(__name__)
 model_path = os.path.join(os.getcwd(), 'models', 'RESNET_PLANT_IDENTIFICATION_CLASSES_140.h5')
@@ -20,11 +20,23 @@ def hello_world():
 
 @app.route('/identify', methods=['POST'])
 def identify_plant_disease():
+    
+    json_data = request.get_json()  # Retrieve the JSON payload
+    image_url = None
 
-    # Get the image from the POST request
-    image_file = request.files['image']
-    image_path = './images/' + image_file.filename
-    image_file.save(image_path)
+    if 'image_url' in json_data:
+        image_url = json_data['image_url']
+    else:
+        return jsonify({'error': 'image_url not found in request'}) 
+    
+
+    print("image_url->", image_url)
+    img_data = requests.get(image_url).content
+
+    image_path = os.path.join(os.getcwd(), 'images', str(uuid.uuid4()))+".jpg"
+    
+    with open(image_path, 'wb') as handler:   
+        handler.write(img_data)
 
     plant_species_pred = plant_identification.plant_species(image_path, model)
     plant_disease_pred = plant_disease.plant_disease(image_path)
@@ -32,12 +44,6 @@ def identify_plant_disease():
     response =  jsonify({'plant_species': plant_species_pred, 'plant_disease': plant_disease_pred})
     response.status_code = 200
     return response
-    # if(len(plant_disease_pred["predictions"]) > 0):
-    #     return plant_disease_pred
-    # elif(plant_species_pred):
-    #     return plant_species_pred
-    # else:
-    #     return jsonify({'error': 'Unable to identify plant'})
 
 
 if __name__ == '__main__':
